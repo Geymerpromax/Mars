@@ -1,0 +1,49 @@
+﻿@page "/suggest"
+@inject NavigationManager NavigationManager
+
+
+@if (!isSubmitted)
+{
+    <h3>Хотите предложить освоение новой планеты?</h3>
+    <h3>Заполните форму ниже!</h3>
+
+    <EditForm Model="@application" OnValidSubmit="@HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>Название планеты:</label>
+            <InputText id="planetName" @bind-Value="application.PlanetName" class="form-control" />
+        </div>   
+                    
+        <div>
+            <label>Преимущества планеты:</label>
+            <InputText id="advantages" @bind-Value="application.Advantages" class="form-control" />
+        </div>
+       
+        <button type="submit" class="btn btn-primary">Отправить</button>
+    </EditForm>
+}
+@if (isSubmitted)
+{
+    <h2>Ваша анкета принята</h2>
+    <p><strong>Название планеты:</strong> @application.PlanetName</p>   
+    <p><strong>Причина полета:</strong> @application.Advantages</p>
+   
+}
+
+@code {
+    private AstronautApplication application = new AstronautApplication();
+    private bool isSubmitted = false;
+
+    private void HandleSubmit()
+    {
+        isSubmitted = true;
+    }
+
+    public class AstronautApplication
+    {
+        public string PlanetName { get; set; }     
+        public string Advantages { get; set; } // Причина полета
+    }
+}

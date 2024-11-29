@@ -1,0 +1,49 @@
+﻿/* Общий стиль для формы */
+.form-container {
+    background-color: #ffe4c4;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 400px;
+    margin: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Заголовки */
+.form-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.form-subtitle {
+    text-align: center;
+    font-size: 18px;
+    color: #555;
+}
+
+/* Поля ввода */
+.form-input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Кнопка отправки */
+.form-button {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+}
+
+    .form-button:hover {
+        background-color: #0056b3;
+    }

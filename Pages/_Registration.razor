@@ -1,0 +1,49 @@
+﻿@page "/registration"
+@inject NavigationManager NavigationManager
+@using Microsoft.Data.Sqlite
+
+<h1>Регистрация</h1>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color:red">@errorMessage</p>
+}
+
+<input @bind="loginValue" placeholder="Введите логин" />
+<input @bind="passwordValue" placeholder="Введите пароль" type="password" />
+<input @bind="phoneValue" placeholder="Введите телефон" />
+<button @onclick="Register">Зарегистрироваться</button>
+
+@code {
+    private string loginValue;
+    private string passwordValue;
+    private string phoneValue;
+    private string errorMessage;
+
+    private void Register()
+    {
+        using var connection = new SqliteConnection("Data Source=Mars.db");
+        connection.Open();
+
+        // Проверка существующего логина
+        using var checkCommand = new SqliteCommand("SELECT COUNT(*) FROM accounts WHERE login = @login", connection);
+        checkCommand.Parameters.AddWithValue("@login", loginValue);
+
+        var exists = Convert.ToInt32(checkCommand.ExecuteScalar()) > 0;
+
+        if (exists)
+        {
+            errorMessage = "Пользователь с таким логином уже существует!";
+        }
+        else
+        {
+            using var insertCommand = new SqliteCommand("INSERT INTO accounts (login, pass, telephone, is_logged_in) VALUES (@login, @pass, @phone, 0)", connection);
+            insertCommand.Parameters.AddWithValue("@login", loginValue);
+            insertCommand.Parameters.AddWithValue("@pass", passwordValue);
+            insertCommand.Parameters.AddWithValue("@phone", phoneValue);
+            insertCommand.ExecuteNonQuery();
+
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+}

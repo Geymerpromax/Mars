@@ -1,0 +1,18 @@
+﻿
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>Извините, страница не найдена.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+
+
+@code {
+    // Дополнительный код для App.razor обычно не требуется,
+    // так как вся настройка происходит непосредственно в разметке.
+}

@@ -1,0 +1,37 @@
+﻿@page "/simulytors"
+
+<h1>Учебные Симуляторы</h1>
+
+<div style="text-align: center; margin-top: 20px;">
+    <InputFile OnChange="HandleFilesSelected" multiple />
+</div>
+
+<div style="display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px;">
+    @if (uploadedImages?.Count > 0)
+    {
+        @foreach (var image in uploadedImages)
+        {
+            <img src="@image" alt="Загруженное изображение" style="width: 300px; height: auto; margin: 10px; border: 1px solid #ccc;" />
+        }
+    }
+    <img src="images/Тренажёр 1 - гидробас.jpg" alt="Загруженное изображение" style="width: 300px; height: auto; margin: 10px; border: 1px solid #ccc;" />
+
+</div>
+
+@code {
+    private List<string> uploadedImages = new List<string>();
+
+    private async Task HandleFilesSelected(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024); // Максимум 10 МБ на файл
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            var base64Image = Convert.ToBase64String(memoryStream.ToArray());
+            var dataUrl = $"data:{file.ContentType};base64,{base64Image}";
+
+            uploadedImages.Add(dataUrl);
+        }
+    }
+}

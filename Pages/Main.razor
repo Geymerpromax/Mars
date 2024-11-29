@@ -1,0 +1,120 @@
+﻿@page "/main"
+@inject NavigationManager NavigationManager
+<head>
+    <link rel="stylesheet" href="css/main.css" />
+</head>
+
+<!-- Фото-заставка -->
+<div id="splash-screen" class="splash-screen">
+    <img src="images/Понаехали.jpg" alt="Заставка" />
+</div>
+
+<!-- Основное содержимое -->
+<div id="main-content" class="main-content" >
+    <h1>Добро пожаловать в компанию колонизации Марса</h1>
+
+    <h2>Тут можете ознакомиться с рекламной кампанией</h2>
+    <button @onclick="NavigateToPromoton">Открыть</button>
+
+    <h2>А тут можете заполнить анкету для участия в проекте</h2>
+    <button @onclick="NavigateToRegistrInColony">Открыть</button>
+
+    <h2>Здесь можно составить предложение для освоения новой планеты</h2>
+    <button @onclick="NavigateToSuggest">Открыть</button>
+
+    <h2>Пейзажи Марса</h2>
+    <button @onclick="NavigateToLandscapes">Открыть</button>
+
+    <h2>Учебные Симуляторы</h2>
+    <button @onclick="NavigateToSimulytors">Открыть</button>
+
+    <h2>Список профессий</h2>
+    <button @onclick="NavigateToProfs">Открыть</button>
+
+    <div class="avariya">
+        <h2>Аварийный доступ</h2>
+        <button @onclick="NavigateToAvariya">Открыть</button>
+    </div>
+
+    <h2>Каюты</h2>
+    <button @onclick="NavigateToCabin">Открыть</button>
+
+    <h3>Выбрать вариант входа</h3>
+    <button @onclick="NavigateToRegistration">Регистрация</button>
+    <button @onclick="NavigateToLogin">Авторизация</button>
+</div>
+
+<!-- Аудио -->
+
+<div>
+    <audio id="background-audio" autoplay loop>
+        <source src="audio/Мое аудио.mp3" type="audio/mp3">
+        Ваш браузер не поддерживает воспроизведение аудио.
+    </audio>
+</div>
+
+@code {
+    private void NavigateToRegistration()
+    {
+        NavigationManager.NavigateTo("/registration", true);
+    }
+
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login", true);
+    }
+
+    private void NavigateToPromoton()
+    {
+        NavigationManager.NavigateTo("/promotion", true);
+    }
+
+    private void NavigateToRegistrInColony()
+    {
+        NavigationManager.NavigateTo("/registrincolony", true);
+    }
+
+    private void NavigateToSuggest()
+    {
+        NavigationManager.NavigateTo("/suggest", true);
+    }
+
+    private void NavigateToLandscapes()
+    {
+        NavigationManager.NavigateTo("/landscapes", true);
+    }
+
+    private void NavigateToSimulytors()
+    {
+        NavigationManager.NavigateTo("/simulytors", true);
+    }
+
+    private void NavigateToProfs()
+    {
+        NavigationManager.NavigateTo("/profs", true);
+    }
+
+    private void NavigateToAvariya()
+    {
+        NavigationManager.NavigateTo("/avariya", true);
+    }
+
+    private void NavigateToCabin()
+    {
+        NavigationManager.NavigateTo("/stateroom", true);
+    }
+}
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Убираем заставку и показываем основной контент после анимации
+        setTimeout(function () {
+            const splashScreen = document.getElementById("splash-screen");
+            const mainContent = document.getElementById("main-content");
+
+            if (splashScreen) splashScreen.style.display = "none"; // Убираем заставку
+            if (mainContent) mainContent.style.display = "block"; // Показываем основной контент
+        }, 50000); // 3 секунды отображения + 3 секунды анимации исчезновения
+    });
+</script>

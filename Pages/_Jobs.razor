@@ -1,0 +1,209 @@
+﻿@page "/jobs"
+@inject NavigationManager NavigationManager
+@using Microsoft.Data.Sqlite
+
+<h1>Миссия: Колонизация Марса</h1>
+<h3>И на Марсе будут расти грибы</h3>
+
+@if(errorMessage != String.Empty)
+{
+     <p>@errorMessage</p>
+}
+
+<div class="worksLog">
+    <h2>WorksLog</h2>
+     <button @onclick="OpenProfile">Открыть профиль</button>
+</div>
+
+<button @onclick="CreateNewJob" class="addButton">Добавить работу</button>
+<br />
+
+@if (jobs.Count == 0)
+{
+    <p>Работ пока нет. Добавьте первую!</p>
+}
+
+@foreach (var job in jobs)
+{
+    <div class="job-container">
+        <h1>Действие #@job.Id</h1>
+        <div class="title">
+            <label class="customLabel">Название</label>
+            <label class="customLabel">Руководитель</label>
+        </div>
+        <div class="myContent">
+            <label class="customLabel">@job.Title</label>
+            <label class="customLabel">@job.TeamLeader</label>
+        </div>
+        <div class="myButtons">
+            <button @onclick="@(() => EditJob(job.Id))">Редактировать</button>
+            <button @onclick="() => DeleteJob(job.Id)" class="deleteButton">Удалить</button>
+        </div>
+    </div>
+}
+
+<style>
+    .worksLog {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .addButton {
+        background-color: green;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+    }
+
+        .addButton:hover {
+            background-color: darkgreen;
+        }
+
+    .job-container {
+        margin: 20px 0;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .title {
+        background: gray;
+        padding: 10px;
+        font-weight: bold;
+    }
+
+    .myContent {
+        background: purple;
+        color: white;
+        padding: 10px;
+    }
+
+    .customLabel {
+        width: 150px;
+        display: inline-block;
+    }
+
+    .myButtons {
+        margin-top: 10px;
+    }
+
+    .editButton {
+        background: yellow;
+        color: black;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+    }
+
+        .editButton:hover {
+            background: orange;
+        }
+
+    .deleteButton {
+        background: red;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+
+        .deleteButton:hover {
+            background: darkred;
+        }
+</style>
+
+@code {
+    private List<Job> jobs = new List<Job>();
+    private string FatherId { get; set; }
+    private string errorMessage { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        LoadJobs();
+    }
+
+    private void LoadJobs()
+    {
+        jobs.Clear();
+
+        using (var connection = new SqliteConnection("Data Source=Mars.db"))
+        {
+            connection.Open();
+            using var command = new SqliteCommand("SELECT * FROM jobs", connection);
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                jobs.Add(new Job
+                    {
+                        Id = Convert.ToInt32(reader["id"]),
+                        Title = reader["title"].ToString(),
+                        TeamLeader = reader["teamLeader"].ToString(),
+                        Father = reader["father"].ToString(),
+
+                    });
+            }
+        }
+    }
+
+    private void CreateNewJob()
+    {
+        NavigationManager.NavigateTo("/createjob");
+    }
+
+    private void EditJob(int id)
+    {
+
+        using (var connection = new SqliteConnection("Data Source=Mars.db"))
+        {
+            connection.Open();
+            using var command = new SqliteCommand($"SELECT * FROM jobs WHERE id = {id}", connection);
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+
+                FatherId = reader["father"].ToString();                    
+            }
+        }
+
+        if(FatherId == BlazorApp1.Data.Interaction.sessionId.ToString())
+        {
+            NavigationManager.NavigateTo($"/editjob/{id}");
+        }
+        else
+        {
+            errorMessage = "Вы не создатель";
+        }
+    }
+
+    private void DeleteJob(int jobId)
+    {
+        using (var connection = new SqliteConnection("Data Source=Mars.db"))
+        {
+            connection.Open();
+            using var command = new SqliteCommand("DELETE FROM jobs WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@id", jobId);
+            command.ExecuteNonQuery();
+        }
+
+        LoadJobs();
+    }
+
+    private void OpenProfile()
+    {
+         NavigationManager.NavigateTo($"/profile");
+    }
+
+    private class Job
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string TeamLeader { get; set; }
+        public string Father { get; set; }
+
+    }
+}

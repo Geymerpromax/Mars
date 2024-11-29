@@ -1,0 +1,48 @@
+﻿@page "/createjob"
+@inject NavigationManager NavigationManager
+@using Microsoft.Data.Sqlite
+
+<h1>Добавить новую работу</h1>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color:red">@errorMessage</p>
+}
+
+<input @bind="jobTitle" placeholder="Название работы" />
+<input @bind="teamLeader" placeholder="Руководитель" />
+<button @onclick="AddJob">Добавить</button>
+<button @onclick="Cancel">Отмена</button>
+
+@code {
+    private string jobTitle;
+    private string teamLeader;
+    private string errorMessage;
+
+    private void AddJob()
+    {
+        if (string.IsNullOrWhiteSpace(jobTitle) || string.IsNullOrWhiteSpace(teamLeader))
+        {
+            errorMessage = "Пожалуйста, заполните все поля!";
+            return;
+        }
+
+        using var connection = new SqliteConnection("Data Source=Mars.db");
+        connection.Open();      
+
+        // Добавляем новую работу
+        using var insertCmd = new SqliteCommand($"INSERT INTO jobs (title, teamLeader, father) VALUES (@title, @teamLeader, {BlazorApp1.Data.Interaction.sessionId})", connection);
+        insertCmd.Parameters.AddWithValue("@title", jobTitle);
+        insertCmd.Parameters.AddWithValue("@teamLeader", teamLeader);
+
+        insertCmd.ExecuteNonQuery();
+
+        // Возврат к списку работ
+        NavigationManager.NavigateTo("/jobs");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/jobs");
+    }
+}

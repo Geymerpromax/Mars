@@ -1,0 +1,29 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+<title>Колонизация Марса</title>
+
+
+ <div class="layout">
+    
+    <h1>Миссия по гриболизации Марса</h1> 
+    <label>Как и большинство других жизненных проблем, эту поможет решить ящик чистой радиации</label>
+    <button @onclick="NavigateToMain" class="btn btn-primary">Вернутся на главную</button>     
+            
+                
+    <div class="main">  
+        <main>               
+            <article class="content">       
+               
+                @Body
+               
+            </article>
+        </main>
+    </div>
+</div>
+
+@code{
+    private void NavigateToMain()
+    {
+        NavigationManager.NavigateTo("/main");
+    }
+}

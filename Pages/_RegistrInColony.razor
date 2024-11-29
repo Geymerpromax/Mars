@@ -1,0 +1,135 @@
+﻿@page "/registrincolony"
+@if (!isSubmitted)
+{
+    <h1>Анкета для отбора астронавтов</h1>
+    <p>Заполните анкету, чтобы подать заявку на участие в миссии по колонизации Марса.</p>
+
+    <EditForm Model="@application" OnValidSubmit="@HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>Фамилия:</label>
+            <InputText id="surname" @bind-Value="application.Surname" class="form-control" />
+        </div>
+        <div>
+            <label>Имя:</label>
+            <InputText id="name" @bind-Value="application.Name" class="form-control" />
+        </div>
+        <div>
+            <label>Email:</label>
+            <InputText id="email" @bind-Value="application.Email" type="email" class="form-control" />
+        </div>
+        <div>
+            <label>Образование:</label>
+            <InputText id="education" @bind-Value="application.Education" class="form-control" />
+        </div>
+        <div>
+            <label>Основная профессия:</label>
+            <InputSelect id="profession" @bind-Value="application.Profession" class="form-control">
+                <option value="">Выберите профессию</option>
+                <option>Инженер-исследователь</option>
+                <option>Пилот</option>
+                <option>Строитель</option>
+                <option>Экзобиолог</option>
+                <option>Врач</option>
+                <option>Инженер по терраформированию</option>
+                <option>Климатолог</option>
+                <option>Специалист по радиационной защите</option>
+                <option>Астрогеолог</option>
+                <option>Гляциолог</option>
+                <option>Инженер жизнеобеспечения</option>
+                <option>Метеоролог</option>
+                <option>Оператор марсохода</option>
+                <option>Киберинженер</option>
+                <option>Штурман</option>
+                <option>Пилот дронов</option>
+            </InputSelect>
+        </div>
+        <div>
+            <label>Пол:</label>
+            <InputRadioGroup @bind-Value="application.Gender">
+                <InputRadio id="male" Value="@("Мужской")" /> Мужской
+                <InputRadio id="female" Value="@("Женский")" /> Женский
+            </InputRadioGroup>
+        </div>
+        <div>
+            <label>Мотивация:</label>
+            <InputTextArea id="motivation" @bind-Value="application.Motivation" class="form-control" />
+        </div>
+        <div>
+            <label>Готовы ли остаться на Марсе?</label>
+            <InputCheckbox id="stayOnMars" @bind-Value="application.ReadyToStay" />
+        </div>
+
+        <!-- Добавляем поле для ввода причины полета -->
+        <div>
+            <label>Причина полета:</label>
+            <InputText id="flightReason" @bind-Value="application.FlightReason" class="form-control" />
+        </div>
+
+        <!-- Добавляем компонент для загрузки фото -->
+        <div>
+            <label>Загрузить ваше фото:</label>
+            <InputFile id="photo" OnChange="HandleFileChange" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Отправить</button>
+    </EditForm>
+}
+@if (isSubmitted)
+{
+    <h2>Спасибо за вашу заявку!</h2>
+    <p><strong>Фамилия:</strong> @application.Surname</p>
+    <p><strong>Имя:</strong> @application.Name</p>
+    <p><strong>Email:</strong> @application.Email</p>
+    <p><strong>Образование:</strong> @application.Education</p>
+    <p><strong>Профессия:</strong> @application.Profession</p>
+    <p><strong>Пол:</strong> @application.Gender</p>
+    <p><strong>Мотивация:</strong> @application.Motivation</p>
+    <p><strong>Готовы остаться на Марсе:</strong> @(application.ReadyToStay ? "Да" : "Нет")</p>
+    <p><strong>Причина полета:</strong> @application.FlightReason</p>
+    @if (application.Photo != null)
+    {
+        <p><strong>Фото:</strong></p>
+        <img src="@application.Photo" alt="Фото" style="max-width: 200px;" />
+    }
+}
+
+@code {
+    private AstronautApplication application = new AstronautApplication();
+    private bool isSubmitted = false;
+
+    private void HandleSubmit()
+    {
+        isSubmitted = true;
+    }
+
+    private async Task HandleFileChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            using (var stream = new MemoryStream())
+            {
+                await file.OpenReadStream().CopyToAsync(stream);
+                var base64Data = Convert.ToBase64String(stream.ToArray());
+                application.Photo = $"data:image/png;base64,{base64Data}";
+            }
+        }
+    }
+
+    public class AstronautApplication
+    {
+        public string Surname { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Education { get; set; }
+        public string Profession { get; set; }
+        public string Gender { get; set; }
+        public string Motivation { get; set; }
+        public bool ReadyToStay { get; set; }
+        public string FlightReason { get; set; } // Причина полета
+        public string Photo { get; set; } // Фото в формате base64
+    }
+}

@@ -1,0 +1,137 @@
+﻿@page "/editjob/{Id:int?}"
+@inject NavigationManager NavigationManager
+@using Microsoft.Data.Sqlite
+
+<h1>Редактировать работу</h1>
+
+@if (string.IsNullOrEmpty(errorMessage))
+{
+    <div>
+        <label>Название:</label>
+        <input @bind="jobTitle" placeholder="Введите название работы" />
+    </div>
+    <div>
+        <label>Руководитель:</label>
+        <input @bind="jobTeamLeader" placeholder="Введите имя руководителя" />
+    </div>
+    <button @onclick="SaveChanges" class="saveButton">Сохранить</button>
+    <button @onclick="Cancel" class="cancelButton">Отмена</button>
+}
+else
+{
+    <p class="error">@errorMessage</p>
+}
+
+<style>
+    div {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    input {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+    }
+
+    .saveButton {
+        background: green;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+    }
+
+        .saveButton:hover {
+            background: darkgreen;
+        }
+
+    .cancelButton {
+        background: red;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+
+        .cancelButton:hover {
+            background: darkred;
+        }
+
+    .error {
+        color: red;
+        font-weight: bold;
+    }
+</style>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private string jobTitle { get; set; } = string.Empty;
+    private string jobTeamLeader { get; set; } = string.Empty;
+    private string errorMessage { get; set; } = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        if (!Id.HasValue)
+        {
+            errorMessage = "Не указан идентификатор работы.";
+            return;
+        }
+
+        LoadJob(Id.Value);
+    }
+
+    private void LoadJob(int jobId)
+    {
+        using (var connection = new SqliteConnection("Data Source=Mars.db"))
+        {
+            connection.Open();
+            using var command = new SqliteCommand("SELECT * FROM jobs WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@id", jobId);
+            using var reader = command.ExecuteReader();
+
+            if (reader.Read())
+            {
+                jobTitle = reader["title"].ToString();
+                jobTeamLeader = reader["teamLeader"].ToString();
+            }
+            else
+            {
+                errorMessage = "Работа с указанным идентификатором не найдена.";
+            }
+        }
+    }
+
+    private void SaveChanges()
+    {
+        if (string.IsNullOrWhiteSpace(jobTitle) || string.IsNullOrWhiteSpace(jobTeamLeader))
+        {
+            errorMessage = "Все поля должны быть заполнены.";
+            return;
+        }
+
+        using (var connection = new SqliteConnection("Data Source=Mars.db"))
+        {
+            connection.Open();
+            using var command = new SqliteCommand("UPDATE jobs SET title = @title, teamLeader = @teamLeader WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@title", jobTitle);
+            command.Parameters.AddWithValue("@teamLeader", jobTeamLeader);
+            command.Parameters.AddWithValue("@id", Id.Value);
+            command.ExecuteNonQuery();
+        }
+
+        NavigationManager.NavigateTo("/jobs");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/jobs");
+    }
+}

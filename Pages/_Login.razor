@@ -1,0 +1,50 @@
+﻿@page "/login"
+@inject NavigationManager NavigationManager
+@using Microsoft.Data.Sqlite
+
+<h1>Авторизация</h1>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color:red">@errorMessage</p>
+}
+
+<input @bind="loginValue" placeholder="Введите логин" />
+<input @bind="passwordValue" placeholder="Введите пароль" type="password" />
+<button @onclick="Login">Войти</button>
+
+@code {
+    private string loginValue;
+    private string passwordValue;
+    private string errorMessage;
+
+    private void Login()
+    {
+        using var connection = new SqliteConnection("Data Source=Mars.db");
+        connection.Open();
+
+        using var command = new SqliteCommand("SELECT id, pass FROM accounts WHERE login = @login", connection);
+        command.Parameters.AddWithValue("@login", loginValue);
+
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
+        {
+            var storedPassword = reader["pass"].ToString();
+            var userId = Convert.ToInt32(reader["id"]);
+
+            if (storedPassword == passwordValue)
+            {             
+                BlazorApp1.Data.Interaction.sessionId = userId;
+                NavigationManager.NavigateTo("/jobs");
+            }
+            else
+            {
+                errorMessage = "Неверный пароль!";
+            }
+        }
+        else
+        {
+            errorMessage = "Пользователь не найден!";
+        }
+    }
+}

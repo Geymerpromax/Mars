@@ -1,0 +1,73 @@
+﻿@page "/profile"
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Microsoft.Data.Sqlite
+
+<h1>Профиль</h1>
+<p>Добро пожаловать, Астронавт!</p>
+
+<p>Ваши данные:</p>
+
+<a>Имя: </a>
+<label>@Name</label>
+<br />
+<a>Фамилия: </a>
+<label>@Surname</label>
+<br />
+<a>Теефон: </a>
+<label>@Phone</label>
+<br />
+<a>Должность</a>
+<label>@Work</label>
+<br />
+<br />
+
+<p>Ваша каюта:</p>
+
+
+<div style="display: flex; width: fit-content" class="solocabin">
+    <p>Цвет вашей каюты</p>
+    <img src="images/mars.jpg" alt="Марс" style="width: auto; height: 500px;" />
+</div>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private string Name { get; set; } = string.Empty;
+    private string Surname { get; set; } = string.Empty;
+    private string Phone { get; set; } = string.Empty;
+    private string Work { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        LoadData();
+    }
+    private void LoadData()
+    {
+        using (var connection = new SqliteConnection("Data Source=Mars.db"))
+        {
+            connection.Open();
+            using var command = new SqliteCommand($"SELECT * FROM accounts WHERE id = {BlazorApp1.Data.Interaction.sessionId}", connection);
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                Name = reader["name"].ToString();
+                Surname = reader["surname"].ToString();
+                Phone = reader["telephone"].ToString();     
+                Work = reader["work"].ToString();                   
+            }
+            
+            connection.Close();
+        }
+    }
+
+    
+}
+<style>
+    .solocabin{
+        /* margin: 50px, 50px, 50px, 50px;      */
+        background-color: chocolate;       
+        margin: 
+    }
+</style>
+

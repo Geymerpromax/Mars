@@ -1,0 +1,49 @@
+﻿@page "/greetings"
+@inject NavigationManager NavigationManager
+@using Microsoft.Data.Sqlite
+
+
+<h1>Добро пожаловать на Марс</h1>
+<h3>Теперь вы можете добавить свою работу, заполнив форму ниже</h3>
+
+<input @bind="jobTitleValue" placeholder="Job Title"/>
+<br/>
+<input @bind="teamLeaderValue" placeholder="Team Leader id"/>
+<br/>
+<input @bind="workSizeValue" placeholder="Work Size"/>
+<br/>
+<input @bind="collaboratorsValue" placeholder="Collaborators"/>
+<br/>
+<input @bind="isChecked" type="checkbox"/>
+<br/>
+<button @onclick="AddJob">Submit</button>
+
+@code {
+    private string jobTitleValue { get; set; } = " ";
+    private string teamLeaderValue { get; set; } = " ";
+    private string workSizeValue { get; set; } = " ";
+    private string collaboratorsValue { get; set; } = " ";
+    private string isJobFinishedText { get; set; } = " ";
+    private string currentUserId { get; set; } = " ";
+    private bool isChecked { get; set; } = false;
+
+    private void AddJob()
+    {
+        using (var connection = new SqliteConnection("Data Source=Mars.db"))
+        {
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO jobs (title, teamLeader, father) VALUES (@title, @teamLeader, @father)";
+            command.Parameters.AddWithValue("@title", jobTitleValue);
+            command.Parameters.AddWithValue("@teamLeader", teamLeaderValue);
+            command.Parameters.AddWithValue("@father", currentUserId); // Сохраняем ID создателя
+            command.ExecuteNonQuery();
+        }
+
+        // После добавления переходим на страницу списка работ
+        if(isChecked)
+        {
+            NavigationManager.NavigateTo($"/jobs?jobTitleValue={jobTitleValue}&teamLeaderValue={teamLeaderValue}&workSizeValue={workSizeValue}&collaboratorsValue={collaboratorsValue}&isJobFinishedText={isJobFinishedText}");
+        }
+    }
+}

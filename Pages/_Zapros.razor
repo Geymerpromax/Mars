@@ -1,0 +1,201 @@
+﻿@page "/database-management"
+@using Microsoft.Data.Sqlite
+
+<h1>Управление базой данных</h1>
+
+<div>
+    <button @onclick="CreateTables">Создать таблицы</button>
+    <button>Заполнить таблицы данными</button>
+    <button @onclick="GetModule1Residents">Колонисты из модуля 1</button>
+    <button @onclick="GetNonEngineerResidents">Не инженеры из модуля 1</button>
+    <button @onclick="GetMinors">Несовершеннолетние</button>
+    <button @onclick="GetChiefOrMiddle">Должности с Chief или Middle</button>
+    <button @onclick="UpdateModule1Younger21">Обновить адрес  21 года</button>
+</div>
+
+<h2>Результаты запросов</h2>
+<ul>
+    @foreach (var result in queryResults)
+    {
+        <li>@result</li>
+    }
+</ul>
+
+@code {
+    private List<string> queryResults = new();
+    private string connectionString = "Data Source=colony.db";
+
+    private void ExecuteNonQuery(string query)
+    {
+        using var connection = new SqliteConnection(connectionString);
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = query;
+        command.ExecuteNonQuery();
+    }
+
+    private void ExecuteQuery(string query, Action<SqliteDataReader> handleResults)
+    {
+        queryResults.Clear();
+        using var connection = new SqliteConnection(connectionString);
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = query;
+        using var reader = command.ExecuteReader();
+        handleResults(reader);
+    }
+
+    private void CreateTables()
+    {
+        using var connection = new SqliteConnection(connectionString);
+        connection.Open();
+
+        string createUsersTable = @"
+            CREATE TABLE IF NOT EXISTS Users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                surname TEXT NOT NULL,
+                name TEXT NOT NULL,
+                age INTEGER NOT NULL,
+                position TEXT NOT NULL,
+                speciality TEXT NOT NULL,
+                address TEXT NOT NULL,
+                hashed_password TEXT NOT NULL,
+                modified_date TEXT NOT NULL
+            );";
+
+        string createJobsTable = @"
+            CREATE TABLE IF NOT EXISTS Jobs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                surname TEXT NOT NULL,
+                name TEXT NOT NULL,
+                age INTEGER NOT NULL,
+                position TEXT NOT NULL,
+                speciality TEXT NOT NULL,
+                address TEXT NOT NULL,
+                hashed_password TEXT NOT NULL,
+                modified_date TEXT NOT NULL
+            );";
+
+        string createDepartmentsTable = @"
+            CREATE TABLE IF NOT EXISTS Departments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                chief INTEGER NOT NULL,
+                members TEXT NOT NULL);";
+
+        using var command = connection.CreateCommand();
+        command.CommandText = createUsersTable;
+        command.ExecuteNonQuery();
+
+        command.CommandText = createJobsTable;
+        command.ExecuteNonQuery();
+
+        command.CommandText = createDepartmentsTable;
+        command.ExecuteNonQuery();
+
+        queryResults.Add("Таблицы созданы или уже существуют.");
+    }
+
+    private void PopulateTables()
+    {
+        string insertUsers = @"
+        INSERT INTO Users (surname, name, age, position, speciality, address, hashed_password, modified_date)
+        VALUES
+        ('Ivanov', 'Ivan', 25, 'Engineer', 'Mechanical', 'module_1', 'ivan@example.com', 'hash1', datetime('now')),
+        ('Petrov', 'Petr', 30, 'Pilot', 'Aviation', 'module_1', 'petr@example.com', 'hash2', datetime('now')),
+        ('Sidorov', 'Sidr', 18, 'Technician', 'Electronics', 'module_2', 'sidor@example.com', 'hash3', datetime('now')),
+        ('Kuznetsov', 'Alex', 40, 'Captain', 'Command', 'module_1', 'alex@example.com', 'hash4', datetime('now')),
+        ('Smirnov', 'Dmitry', 19, 'Engineer', 'Software', 'module_3', 'dmitry@example.com', 'hash5', datetime('now')),
+        ('Popov', 'Oleg', 22, 'Technician', 'Mechanics', 'module_2', 'oleg@example.com', 'hash6', datetime('now')),
+        ('Volkov', 'Vlad', 35, 'Doctor', 'Medicine', 'module_1', 'vlad@example.com', 'hash7', datetime('now')),
+        ('Fedorov', 'Sergey', 45, 'Scientist', 'Biology', 'module_3', 'sergey@example.com', 'hash8', datetime('now')),
+        ('Mikhailov', 'Michael', 28, 'Driver', 'Transport', 'module_2', 'mike@example.com', 'hash9', datetime('now')),
+        ('Zaytsev', 'Andrey', 17, 'Intern', 'Student', 'module_1', 'andrey@example.com', 'hash10', datetime('now'));";
+
+        string insertJobs = @"
+        INSERT INTO Jobs (surname, name, age, position, speciality, address, hashed_password, modified_date)
+        VALUES
+        ('Ivanov', 'Ivan', 25, 'Chief Engineer', 'Mechanical', 'module_1', 'job1@example.com', 'hash1', datetime('now')),
+        ('Petrov', 'Petr', 30, 'Middle Manager', 'Aviation', 'module_2', 'job2@example.com', 'hash2', datetime('now')),
+        ('Sidorov', 'Sidr', 18, 'Technician', 'Electronics', 'module_3', 'job3@example.com', 'hash3', datetime('now')),
+        ('Kuznetsov', 'Alex', 40, 'Captain', 'Command', 'module_1', 'job4@example.com', 'hash4', datetime('now')),
+        ('Smirnov', 'Dmitry', 19, 'Engineer', 'Software', 'module_2', 'job5@example.com', 'hash5', datetime('now')),
+        ('Popov', 'Oleg', 22, 'Technician', 'Mechanics', 'module_1', 'job6@example.com', 'hash6', datetime('now')),
+        ('Volkov', 'Vlad', 35, 'Chief Doctor', 'Medicine', 'module_2', 'job7@example.com', 'hash7', datetime('now')),
+        ('Fedorov', 'Sergey', 45, 'Scientist', 'Biology', 'module_3', 'job8@example.com', 'hash8', datetime('now')),
+        ('Mikhailov', 'Michael', 28, 'Driver', 'Transport', 'module_1', 'job9@example.com', 'hash9', datetime('now')),
+        ('Zaytsev', 'Andrey', 17, 'Intern', 'Student', 'module_1', 'job10@example.com', 'hash10', datetime('now'));";
+
+        ExecuteNonQuery(insertUsers);
+        ExecuteNonQuery(insertJobs);
+
+        queryResults.Add("Таблицы заполнены данными.");
+    }
+
+
+    private void GetModule1Residents()
+    {
+        string query = "SELECT surname, name FROM Users WHERE address = 'module_1';";
+        ExecuteQuery(query, reader =>
+        {
+            while (reader.Read())
+            {
+                queryResults.Add($"{reader["surname"]} {reader["name"]}");
+            }
+        });
+    }
+
+    private void GetNonEngineerResidents()
+    {
+        string query = @"
+            SELECT id 
+            FROM Users 
+            WHERE address = 'module_1' 
+              AND position NOT LIKE '%engineer%' 
+              AND speciality NOT LIKE '%engineer%';";
+        ExecuteQuery(query, reader =>
+        {
+            while (reader.Read())
+            {
+                queryResults.Add($"ID: {reader["id"]}");
+            }
+        });
+    }
+
+    private void GetMinors()
+    {
+        string query = "SELECT surname, name FROM Users WHERE age < 18;";
+        ExecuteQuery(query, reader =>
+        {
+            while (reader.Read())
+            {
+                queryResults.Add($"{reader["surname"]} {reader["name"]}");
+            }
+        });
+    }
+
+    private void GetChiefOrMiddle()
+    {
+        string query = @"
+            SELECT surname, name 
+            FROM Users 
+            WHERE position LIKE '%chief%' OR position LIKE '%middle%';";
+        ExecuteQuery(query, reader =>
+        {
+            while (reader.Read())
+            {
+                queryResults.Add($"{reader["surname"]} {reader["name"]}");
+            }
+        });
+    }
+
+    private void UpdateModule1Younger21()
+    {
+        string query = @"
+            UPDATE Users 
+            SET address = 'module_3' 
+            WHERE address = 'module_1' AND age < 21;";
+        ExecuteNonQuery(query);
+        queryResults.Add("Адрес обновлён для колонистов младше 21 года.");
+    }
+}
